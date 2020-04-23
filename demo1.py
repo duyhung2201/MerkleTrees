@@ -3,7 +3,8 @@ from hashlib import sha256
 
 class MerkleNode:
     """
-    Lưu mã hash và nút cha.
+    Nếu là nút lá thì lưu mã hash, giá trị phần dữ liệu và nút cha.
+    Nếu là nút cha thì lưu thêm 2 nút con
     """
     def __init__(self, hash, chunk=None):
         self.chunk = chunk
@@ -53,15 +54,19 @@ class MerkleTree:
         Tạo nút cha từ 2 nút con.
         """
         parent = MerkleNode(
-            self.compute_hash(left_child.hash + right_child.hash))
+            self.compute_hash(left_child.hash + right_child.hash), left_child.chunk + right_child.chunk)
         left_child.parent, right_child.parent = parent, parent
         parent.left_child, parent.right_child = left_child, right_child
-
         
-        print("Left child: {}, Right child: {}, Parent: {}".format(
-            left_child.hash, right_child.hash, parent.hash))
+        print ("---------")
+        print("Left child {}: {}, Right child {}: {}, Parent {}: {}".format(
+            left_child.chunk, left_child.hash, right_child.chunk, right_child.hash, parent.chunk, parent.hash))
         return parent
 
+    @staticmethod
+    def compute_hash(data):
+        data = data.encode('utf-8')
+        return sha256(data).hexdigest()
 
     def getMerklePath(self, chunk):
         """
@@ -112,16 +117,13 @@ class MerkleTree:
 
         return sumHash == path[-1]
 
-    @staticmethod
-    def compute_hash(data):
-        data = data.encode('utf-8')
-        return sha256(data).hexdigest()
+
 
 if __name__ == "__main__":
     lst = list("01234567")
     merkle = MerkleTree(lst)
 
-    path = merkle.getMerklePath("2")
+#     # path = merkle.getMerklePath("2")
 
-    verify = merkle.verifyMerklePath("2", path)
-    print(verify)
+#     # verify = merkle.verifyMerklePath("2", path)
+#     # print(verify)
